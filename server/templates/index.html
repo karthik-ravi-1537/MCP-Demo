@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #444;
+            margin-top: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .api-button {
+            background-color: #2196F3;
+        }
+        .api-button:hover {
+            background-color: #0b7dda;
+        }
+        .tutorial-button {
+            background-color: #ff9800;
+        }
+        .tutorial-button:hover {
+            background-color: #e68a00;
+        }
+        .server-button {
+            background-color: #9c27b0;
+        }
+        .server-button:hover {
+            background-color: #7b1fa2;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>MCP Demo Project</h1>
+    
+    <div class="card">
+        <h2>Welcome to the MCP Demo Project</h2>
+        <p>A comprehensive demonstration of Model Context Protocol (MCP) from beginner to expert level.</p>
+        <p>This project guides you through learning MCP with interactive tutorials, examples, and hands-on exercises.</p>
+    </div>
+    
+    <div class="card">
+        <h2>Getting Started</h2>
+        <p>Choose one of the options below to start exploring MCP:</p>
+        <a href="/api/tutorials" class="button tutorial-button">Tutorials</a>
+        <a href="/api/servers" class="button server-button">MCP Servers</a>
+        <a href="/api/docs" class="button api-button">API Documentation</a>
+    </div>
+    
+    <div class="card">
+        <h2>What is MCP?</h2>
+        <p>Model Context Protocol (MCP) is a protocol for extending AI assistants with external tools and data sources.</p>
+        <p>With MCP, you can create custom tools that AI assistants can use to perform actions like:</p>
+        <ul>
+            <li>Reading and writing files</li>
+            <li>Accessing databases</li>
+            <li>Making API calls</li>
+            <li>Running custom code</li>
+            <li>And much more!</li>
+        </ul>
+    </div>
+    
+    <footer>
+        MCP Demo Project v{{ version }} | <a href="https://github.com/yourusername/mcp-demo-project">GitHub</a>
+    </footer>
+</body>
+</html>

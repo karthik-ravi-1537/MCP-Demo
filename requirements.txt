@@ -1,0 +1,101 @@
+# Core dependencies for MCP Demo Project
+# Model Context Protocol demonstration from beginner to expert
+
+# ============================================================================
+# WEB FRAMEWORK & API
+# ============================================================================
+fastapi>=0.104.0        # Modern, fast web framework for building APIs with Python
+                        # Used for: REST API endpoints, WebSocket connections, interactive docs
+
+uvicorn[standard]>=0.24.0  # Lightning-fast ASGI server implementation
+                          # Used for: serving FastAPI applications, WebSocket support
+
+websockets>=12.0        # WebSocket client and server library
+                        # Used for: real-time MCP communication, bidirectional messaging
+
+pydantic>=2.5.0         # Data validation using Python type annotations
+                        # Used for: request/response validation, configuration management
+
+jinja2>=3.1.0           # Modern and designer-friendly templating language
+                        # Used for: HTML templates, dynamic content generation
+
+markdown>=3.5.0         # Python implementation of Markdown
+                        # Used for: rendering tutorial content, documentation processing
+
+# ============================================================================
+# DATABASE & STORAGE
+# ============================================================================
+aiosqlite>=0.19.0       # Async interface to SQLite database
+                        # Used for: tutorial progress tracking, user data storage
+
+# ============================================================================
+# CLI & UTILITIES
+# ============================================================================
+click>=8.1.0            # Composable command line interface toolkit
+                        # Used for: CLI commands, interactive tutorials, setup scripts
+
+python-dotenv>=1.0.0    # Load environment variables from .env file
+                        # Used for: configuration management, API keys, settings
+
+httpx>=0.25.0           # Next generation HTTP client for Python
+                        # Used for: making HTTP requests, API integrations
+
+aiofiles>=23.0.0        # File support for asyncio
+                        # Used for: async file operations, large file handling
+
+python-multipart>=0.0.6  # Streaming multipart parser for Python
+                         # Used for: file uploads, form data processing
+
+# ============================================================================
+# TESTING & QUALITY ASSURANCE
+# ============================================================================
+pytest>=7.4.0          # Testing framework that makes it easy to write simple tests
+                        # Used for: unit tests, integration tests, test automation
+
+pytest-asyncio>=0.21.0  # Pytest support for asyncio
+                        # Used for: testing async functions, WebSocket connections
+
+pytest-cov>=4.1.0      # Coverage plugin for pytest
+                        # Used for: test coverage reporting, quality metrics
+
+# ============================================================================
+# DEVELOPMENT TOOLS
+# ============================================================================
+black>=23.0.0           # The uncompromising Python code formatter
+                        # Used for: consistent code formatting, maintaining style
+
+isort>=5.12.0           # Python utility to sort imports alphabetically
+                        # Used for: organizing imports, code organization
+
+mypy>=1.7.0             # Optional static typing for Python
+                        # Used for: type checking, catching type-related bugs
+
+flake8>=6.1.0           # Tool for style guide enforcement
+                        # Used for: linting, code quality checks
+
+pre-commit>=3.4.0       # Framework for managing pre-commit hooks
+                        # Used for: automated code quality checks, git hooks
+
+# ============================================================================
+# OPTIONAL DEPENDENCIES (install separately if needed)
+# ============================================================================
+# Documentation:
+# sphinx>=7.0.0         # Documentation generator
+#                       # Used for: API documentation, user guides
+
+# sphinx-rtd-theme>=1.3.0  # Read the Docs theme for Sphinx
+#                          # Used for: documentation styling, web docs
+
+# Advanced Development:
+# jupyter>=1.0.0        # Jupyter notebook environment
+#                       # Used for: interactive tutorials, experimentation
+
+# ipywidgets>=8.0.0     # Interactive widgets for Jupyter notebooks
+#                       # Used for: interactive MCP demos, parameter tuning
+
+# Web Interface Alternatives:
+# streamlit>=1.28.0     # Web app framework for ML/data science
+#                       # Used for: alternative web interface, quick prototypes
+
+# gradio>=4.0.0         # Build ML web apps easily
+#                       # Used for: interactive MCP demos, user interfaces

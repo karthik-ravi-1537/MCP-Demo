@@ -1,0 +1,1 @@
+"""API endpoints for MCP Demo Project."""
