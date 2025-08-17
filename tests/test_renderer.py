@@ -93,7 +93,7 @@ def test_render_tutorial(renderer: TutorialRenderer, sample_tutorial: Tutorial) 
     """Test rendering a tutorial."""
     # Render the tutorial
     rendered = renderer.render_tutorial(sample_tutorial)
-    
+
     # Check the rendered tutorial
     assert rendered["id"] == sample_tutorial.id
     assert rendered["title"] == sample_tutorial.title
@@ -108,16 +108,16 @@ def test_render_section(renderer: TutorialRenderer, sample_tutorial: Tutorial) -
     """Test rendering a tutorial section."""
     # Render the section
     rendered = renderer.render_section(sample_tutorial.sections[0])
-    
+
     # Check the rendered section
     assert rendered["id"] == sample_tutorial.sections[0].id
     assert rendered["title"] == sample_tutorial.sections[0].title
     assert "<h1>Section 1</h1>" in rendered["content"]
     assert "<p>This is section 1.</p>" in rendered["content"]
-    assert "<div class=\"note\">" in rendered["content"]
-    assert "<div class=\"warning\">" in rendered["content"]
-    assert "<div class=\"tip\">" in rendered["content"]
-    assert "<div class=\"interactive-code\"" in rendered["content"]
+    assert '<div class="note">' in rendered["content"]
+    assert '<div class="warning">' in rendered["content"]
+    assert '<div class="tip">' in rendered["content"]
+    assert '<div class="interactive-code"' in rendered["content"]
     assert len(rendered["code_examples"]) == 1
     assert len(rendered["exercises"]) == 1
 
@@ -126,7 +126,7 @@ def test_render_code_example(renderer: TutorialRenderer, sample_tutorial: Tutori
     """Test rendering a code example."""
     # Render the code example
     rendered = renderer.render_code_example(sample_tutorial.sections[0].code_examples[0])
-    
+
     # Check the rendered code example
     assert rendered["id"] == sample_tutorial.sections[0].code_examples[0].id
     assert rendered["title"] == sample_tutorial.sections[0].code_examples[0].title
@@ -143,7 +143,7 @@ def test_render_exercise(renderer: TutorialRenderer, sample_tutorial: Tutorial) 
     """Test rendering an exercise."""
     # Render the exercise
     rendered = renderer.render_exercise(sample_tutorial.sections[0].exercises[0])
-    
+
     # Check the rendered exercise
     assert rendered["id"] == sample_tutorial.sections[0].exercises[0].id
     assert rendered["title"] == sample_tutorial.sections[0].exercises[0].title
@@ -163,12 +163,12 @@ def test_highlight_code(renderer: TutorialRenderer) -> None:
     highlighted = renderer._highlight_code("print('Hello, world!')", "python")
     assert "print" in highlighted
     assert "Hello, world!" in highlighted
-    
+
     # Highlight JavaScript code
     highlighted = renderer._highlight_code("console.log('Hello, world!');", "javascript")
     assert "console" in highlighted
     assert "Hello, world!" in highlighted
-    
+
     # Highlight code with unknown language
     highlighted = renderer._highlight_code("print('Hello, world!')", "unknown")
     assert "<pre><code>" in highlighted
@@ -184,10 +184,10 @@ print("Hello, world!")
 ```
 """
     processed = renderer._process_content(content)
-    assert "<div class=\"interactive-code\"" in processed
-    assert "data-language=\"python\"" in processed
-    assert "print(\"Hello, world!\")" in processed
-    
+    assert '<div class="interactive-code"' in processed
+    assert 'data-language="python"' in processed
+    assert 'print("Hello, world!")' in processed
+
     # Process content with note block
     content = """
 ::: note
@@ -195,10 +195,10 @@ This is a note.
 :::
 """
     processed = renderer._process_content(content)
-    assert "<div class=\"note\">" in processed
-    assert "<div class=\"note-header\">Note</div>" in processed
+    assert '<div class="note">' in processed
+    assert '<div class="note-header">Note</div>' in processed
     assert "This is a note." in processed
-    
+
     # Process content with warning block
     content = """
 ::: warning
@@ -206,10 +206,10 @@ This is a warning.
 :::
 """
     processed = renderer._process_content(content)
-    assert "<div class=\"warning\">" in processed
-    assert "<div class=\"warning-header\">Warning</div>" in processed
+    assert '<div class="warning">' in processed
+    assert '<div class="warning-header">Warning</div>' in processed
     assert "This is a warning." in processed
-    
+
     # Process content with tip block
     content = """
 ::: tip
@@ -217,18 +217,18 @@ This is a tip.
 :::
 """
     processed = renderer._process_content(content)
-    assert "<div class=\"tip\">" in processed
-    assert "<div class=\"tip-header\">Tip</div>" in processed
+    assert '<div class="tip">' in processed
+    assert '<div class="tip-header">Tip</div>' in processed
     assert "This is a tip." in processed
 
 
 def test_get_css(renderer: TutorialRenderer) -> None:
     """Test getting CSS."""
     css = renderer.get_css()
-    
+
     # Check that the CSS includes Pygments styles
     assert ".codehilite" in css
-    
+
     # Check that the CSS includes custom styles
     assert ".tutorial-section" in css
     assert ".code-example" in css

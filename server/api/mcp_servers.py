@@ -1,19 +1,16 @@
 """API endpoints for MCP servers."""
 
 import asyncio
-import json
 import logging
 import time
-from typing import Dict, List, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from mcp_servers import SERVER_TYPES, create_server
-from mcp_servers.protocol import MCPToolCall, serialize_mcp_message
+from mcp_servers.protocol import MCPToolCall
 
 from .sessions import SessionData, get_active_session
-
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -22,27 +19,27 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Server health status
-server_health: Dict[str, Dict] = {}
+server_health: dict[str, dict] = {}
 
 
 class ToolCallRequest(BaseModel):
     """Tool call request model."""
-    
+
     tool_name: str
-    parameters: Dict
+    parameters: dict
     call_id: str
 
 
 class ServerStartRequest(BaseModel):
     """Server start request model."""
-    
+
     host: str = "localhost"
     port: int = 5000
 
 
-def update_server_health(server_id: str, status: str, details: Optional[Dict] = None) -> None:
+def update_server_health(server_id: str, status: str, details: dict | None = None) -> None:
     """Update server health status.
-    
+
     Args:
         server_id: ID of the server.
         status: Status of the server.
@@ -57,17 +54,17 @@ def update_server_health(server_id: str, status: str, details: Optional[Dict] = 
 
 async def check_server_health(server_id: str) -> None:
     """Check server health in the background.
-    
+
     Args:
         server_id: ID of the server.
     """
     try:
         # Create the server
         server = create_server(server_id)
-        
+
         # Get the tool descriptions
         tools = server.get_tool_descriptions()
-        
+
         # Update health status
         update_server_health(
             server_id,
@@ -77,7 +74,7 @@ async def check_server_health(server_id: str) -> None:
                 "tools": [tool["name"] for tool in tools],
             },
         )
-    
+
     except Exception as e:
         # Update health status with error
         update_server_health(
@@ -90,7 +87,7 @@ async def check_server_health(server_id: str) -> None:
         )
 
 
-@router.get("/servers", response_model=List[Dict])
+@router.get("/servers", response_model=list[dict])
 async def get_servers():
     """Get all available MCP servers."""
     return [
@@ -104,7 +101,7 @@ async def get_servers():
     ]
 
 
-@router.get("/servers/{server_id}", response_model=Dict)
+@router.get("/servers/{server_id}", response_model=dict)
 async def get_server(
     server_id: str = Path(..., description="ID of the server to get"),
     background_tasks: BackgroundTasks = None,
@@ -112,13 +109,13 @@ async def get_server(
     """Get an MCP server by ID."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     server_class = SERVER_TYPES[server_id]
-    
+
     # Check server health in the background
     if background_tasks is not None:
         background_tasks.add_task(check_server_health, server_id)
-    
+
     return {
         "id": server_id,
         "name": server_class.__name__,
@@ -127,7 +124,7 @@ async def get_server(
     }
 
 
-@router.get("/servers/{server_id}/health", response_model=Dict)
+@router.get("/servers/{server_id}/health", response_model=dict)
 async def get_server_health(
     server_id: str = Path(..., description="ID of the server to get"),
     background_tasks: BackgroundTasks = None,
@@ -135,68 +132,62 @@ async def get_server_health(
     """Get health status for an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     # Check server health in the background
     if background_tasks is not None:
         background_tasks.add_task(check_server_health, server_id)
-    
+
     return server_health.get(server_id, {"status": "unknown"})
 
 
-@router.post("/servers/{server_id}/health/check", response_model=Dict)
+@router.post("/servers/{server_id}/health/check", response_model=dict)
 async def check_server_health_endpoint(
     server_id: str = Path(..., description="ID of the server to check"),
 ):
     """Check health status for an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     # Check server health
     await check_server_health(server_id)
-    
+
     return server_health.get(server_id, {"status": "unknown"})
 
 
 @router.get("/servers/{server_id}/tutorial", response_model=str)
-async def get_server_tutorial(
-    server_id: str = Path(..., description="ID of the server to get")
-):
+async def get_server_tutorial(server_id: str = Path(..., description="ID of the server to get")):
     """Get tutorial content for an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     server = create_server(server_id)
-    
+
     return server.get_tutorial_content()
 
 
-@router.get("/servers/{server_id}/examples", response_model=Dict[str, str])
-async def get_server_examples(
-    server_id: str = Path(..., description="ID of the server to get")
-):
+@router.get("/servers/{server_id}/examples", response_model=dict[str, str])
+async def get_server_examples(server_id: str = Path(..., description="ID of the server to get")):
     """Get example code for an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     server = create_server(server_id)
-    
+
     return server.get_example_code()
 
 
-@router.get("/servers/{server_id}/tools", response_model=List[Dict])
-async def get_server_tools(
-    server_id: str = Path(..., description="ID of the server to get")
-):
+@router.get("/servers/{server_id}/tools", response_model=list[dict])
+async def get_server_tools(server_id: str = Path(..., description="ID of the server to get")):
     """Get tools provided by an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     server = create_server(server_id)
-    
+
     return server.get_tool_descriptions()
 
 
-@router.post("/servers/{server_id}/tools/{tool_name}", response_model=Dict)
+@router.post("/servers/{server_id}/tools/{tool_name}", response_model=dict)
 async def call_tool(
     request: ToolCallRequest,
     server_id: str = Path(..., description="ID of the server"),
@@ -206,28 +197,28 @@ async def call_tool(
     """Call a tool on an MCP server."""
     if server_id not in SERVER_TYPES:
         raise HTTPException(status_code=404, detail="Server not found")
-    
+
     server = create_server(server_id)
-    
+
     if tool_name not in server.tools:
         raise HTTPException(status_code=404, detail=f"Tool {tool_name} not found")
-    
+
     try:
         # Call the tool
         result = server.tools[tool_name](**request.parameters)
-        
+
         # If the result is a coroutine, await it
         if asyncio.iscoroutine(result):
             result = await result
-        
+
         return {
             "call_id": request.call_id,
             "result": result,
         }
-    
+
     except Exception as e:
         logger.error(f"Error calling tool {tool_name}: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.websocket("/ws/{server_id}")
@@ -236,19 +227,21 @@ async def websocket_endpoint(websocket: WebSocket, server_id: str):
     if server_id not in SERVER_TYPES:
         await websocket.close(code=1008, reason="Server not found")
         return
-    
+
     server = create_server(server_id)
-    
+
     await websocket.accept()
-    
+
     try:
         # Send the list of available tools
         tools = server.get_tool_descriptions()
-        await websocket.send_json({
-            "message_type": "tool_list",
-            "tools": tools,
-        })
-        
+        await websocket.send_json(
+            {
+                "message_type": "tool_list",
+                "tools": tools,
+            }
+        )
+
         # Handle messages
         async for message in websocket.iter_json():
             try:
@@ -259,27 +252,31 @@ async def websocket_endpoint(websocket: WebSocket, server_id: str):
                         parameters=message["parameters"],
                         call_id=message.get("call_id", ""),
                     )
-                    
+
                     # Call the tool
                     await server.handle_tool_call(websocket, tool_call)
-                
+
                 else:
                     # Send an error for unsupported message types
-                    await websocket.send_json({
-                        "message_type": "error",
-                        "error": f"Unsupported message type: {message.get('message_type')}",
-                    })
-            
+                    await websocket.send_json(
+                        {
+                            "message_type": "error",
+                            "error": f"Unsupported message type: {message.get('message_type')}",
+                        }
+                    )
+
             except Exception as e:
                 logger.error(f"Error handling WebSocket message: {e}")
-                await websocket.send_json({
-                    "message_type": "error",
-                    "error": str(e),
-                })
-    
+                await websocket.send_json(
+                    {
+                        "message_type": "error",
+                        "error": str(e),
+                    }
+                )
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected: {server_id}")
-    
+
     except Exception as e:
         logger.error(f"Error in WebSocket connection: {e}")
         await websocket.close(code=1011, reason=str(e))

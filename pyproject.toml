@@ -12,7 +12,7 @@ authors = [
     {name = "MCP Demo Team"},
 ]
 keywords = ["mcp", "model-context-protocol", "tutorial", "demo", "ai", "llm"]
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -56,19 +56,19 @@ dependencies = [
     "httpx>=0.25.0",             # HTTP client for API calls
     "aiofiles>=23.0.0",          # Async file operations
     "python-multipart>=0.0.6",   # Multipart form data parsing
+    "markdown>=3.5.0",           # Markdown processing for tutorials
 ]
 
 [project.optional-dependencies]
 # Development dependencies
 dev = [
+    "pre-commit",
+    "ruff",
+    "black",
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
     "mypy>=1.7.0",
-    "flake8>=6.1.0",
-    "pre-commit>=3.4.0",
 ]
 
 # Documentation dependencies
@@ -123,6 +123,8 @@ select = [
 ignore = [
     "E501",  # line too long (handled by black)
     "B008",  # function calls in argument defaults
+    "N999",  # invalid module name (common with repo names containing hyphens)
+    "E721",  # type comparisons (functional in this demo project)
 ]
 
 [tool.ruff.lint.isort]

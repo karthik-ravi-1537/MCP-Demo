@@ -1,6 +1,7 @@
 """Tests for the CLI module."""
 
 import pytest
+
 from cli import main
 
 

@@ -1,6 +1,5 @@
 """Tests for the calculator MCP server."""
 
-import math
 import pytest
 
 from mcp_servers.calculator_server import CalculatorServer
@@ -42,7 +41,7 @@ def test_divide(server):
     assert server.divide(5, 2) == 2.5
     assert server.divide(-6, 2) == -3.0
     assert server.divide(0, 5) == 0.0
-    
+
     # Test division by zero
     with pytest.raises(ValueError, match="Cannot divide by zero"):
         server.divide(5, 0)
@@ -61,7 +60,7 @@ def test_sqrt(server):
     assert server.sqrt(9) == 3.0
     assert server.sqrt(2) == pytest.approx(1.4142, 0.0001)
     assert server.sqrt(0) == 0.0
-    
+
     # Test square root of a negative number
     with pytest.raises(ValueError, match="Cannot calculate square root of a negative number"):
         server.sqrt(-1)
@@ -89,7 +88,7 @@ def test_factorial(server):
     assert server.factorial(0) == 1
     assert server.factorial(1) == 1
     assert server.factorial(5) == 120
-    
+
     # Test factorial of a negative number
     with pytest.raises(ValueError, match="Cannot calculate factorial of a negative number"):
         server.factorial(-1)
