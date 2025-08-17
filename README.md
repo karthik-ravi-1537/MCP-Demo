@@ -22,76 +22,37 @@ The Model Context Protocol (MCP) enables AI agents to securely interact with too
 - **Security Best Practices**: Secure file handling and error management patterns
 - **Performance Insights**: Understanding MCP server characteristics and optimization
 
-## 🚀 Quick Start
+## Installation
 
 ### Prerequisites
-- Python 3.8+ installed
-- **For conda users**: [Anaconda](https://www.anaconda.com/products/distribution) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
-- **For venv users**: Python's built-in venv module (included with Python 3.3+)
+- [Homebrew](https://brew.sh/) for installing uv
+- [Anaconda](https://www.anaconda.com/products/distribution) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
-### Installation
+### Method 1: uv
 
-**Option A: Using environment.yml (Recommended)**
 ```bash
-# Clone the repository
+brew install uv
+
 git clone https://github.com/karthik-ravi-1537/MCP-Demo.git
 cd MCP-Demo
 
-# Create environment from file
+uv sync
+
+source .venv/bin/activate
+```
+
+### Method 2: conda
+
+```bash
+git clone https://github.com/karthik-ravi-1537/MCP-Demo.git
+cd MCP-Demo
+
 conda env create -f environment.yml
-
-# Activate the environment
 conda activate mcp-demo
 ```
 
-**Option B: Manual conda setup**
+### Verification
 ```bash
-# Clone the repository
-git clone https://github.com/karthik-ravi-1537/MCP-Demo.git
-cd MCP-Demo
-
-# Create a new conda environment
-conda create -n mcp-demo python=3.11 -y
-
-# Activate the environment
-conda activate mcp-demo
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-**Option C: Using Python venv (Alternative)**
-```bash
-# Clone the repository
-git clone https://github.com/karthik-ravi-1537/MCP-Demo.git
-cd MCP-Demo
-
-# Create a virtual environment
-python -m venv venv-mcp-demo
-
-# Activate the environment
-# On macOS/Linux:
-source venv-mcp-demo/bin/activate
-# On Windows:
-# venv-mcp-demo\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Verify Installation
-```bash
-# Make sure your environment is activated
-# For conda:
-conda activate mcp-demo
-# For venv:
-# source venv-mcp-demo/bin/activate  # macOS/Linux
-# venv-mcp-demo\Scripts\activate     # Windows
-
-# Run comprehensive setup verification
-python verify_setup.py
-
-# Quick component test
 python test_setup.py
 ```
 
