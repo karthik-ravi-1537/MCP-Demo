@@ -119,7 +119,7 @@ class ProgressTracker:
         except Exception as e:
             logger.error(f"Error saving progress for user {progress.user_id}: {e}")
 
-    def track_section_completion(
+    async def track_section_completion(
         self, user_id: str, tutorial_id: str, section_id: str, completed: bool
     ) -> UserProgress:
         """Track completion of a tutorial section.
@@ -136,24 +136,24 @@ class ProgressTracker:
         # Load the user's progress
         progress = self.load_progress(user_id)
 
-        # Initialize the tutorial's sections if needed
+        # Initialize the tutorial's completed sections if it doesn't exist
         if tutorial_id not in progress.completed_sections:
             progress.completed_sections[tutorial_id] = []
 
-        # Update the section completion
+        # Update the section completion status
         if completed and section_id not in progress.completed_sections[tutorial_id]:
             progress.completed_sections[tutorial_id].append(section_id)
         elif not completed and section_id in progress.completed_sections[tutorial_id]:
             progress.completed_sections[tutorial_id].remove(section_id)
 
         # Check if the tutorial is completed
-        self._check_tutorial_completion(progress, tutorial_id)
+        await self._check_tutorial_completion(progress, tutorial_id)
 
         # Check for achievements
         self._check_achievements(progress)
 
         # Check for certificates
-        self._check_certificates(progress)
+        await self._check_certificates(progress)
 
         # Save the progress
         self.save_progress(progress)
@@ -213,7 +213,7 @@ class ProgressTracker:
 
         return progress
 
-    def _check_tutorial_completion(self, progress: UserProgress, tutorial_id: str) -> None:
+    async def _check_tutorial_completion(self, progress: UserProgress, tutorial_id: str) -> None:
         """Check if a tutorial is completed.
 
         Args:
@@ -221,7 +221,7 @@ class ProgressTracker:
             tutorial_id: ID of the tutorial to check.
         """
         # Get the tutorial
-        tutorial = self.db.get_tutorial(tutorial_id)
+        tutorial = await self.db.get_tutorial(tutorial_id)
         if tutorial is None:
             return
 
@@ -234,6 +234,8 @@ class ProgressTracker:
         # Check if all sections are completed
         if section_ids.issubset(completed_section_ids) and tutorial_id not in progress.completed_tutorials:
             progress.completed_tutorials.append(tutorial_id)
+        elif not section_ids.issubset(completed_section_ids) and tutorial_id in progress.completed_tutorials:
+            progress.completed_tutorials.remove(tutorial_id)
 
     def _check_achievements(self, progress: UserProgress) -> None:
         """Check for achievements.
@@ -291,7 +293,7 @@ class ProgressTracker:
                 )
             )
 
-    def _check_certificates(self, progress: UserProgress) -> None:
+    async def _check_certificates(self, progress: UserProgress) -> None:
         """Check for certificates.
 
         Args:
@@ -301,7 +303,7 @@ class ProgressTracker:
         existing_certificate_ids = {certificate.id for certificate in progress.certificates}
 
         # Get all tutorials
-        tutorials = self.db.list_tutorials()
+        tutorials = await self.db.list_tutorials()
 
         # Group tutorials by level
         beginner_tutorials = [t.id for t in tutorials if t.level == DifficultyLevel.BEGINNER]

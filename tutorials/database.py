@@ -355,7 +355,8 @@ class TutorialDatabase:
             await self.connect()
 
         # Start a transaction
-        async with self._connection:
+        await self._connection.execute("BEGIN")
+        try:
             # Insert the tutorial
             await self._connection.execute(
                 """
@@ -439,6 +440,13 @@ class TutorialDatabase:
                         ),
                     )
 
+            # Commit the transaction
+            await self._connection.commit()
+        except Exception:
+            # Rollback on error
+            await self._connection.rollback()
+            raise
+
     async def update_tutorial(self, tutorial: Tutorial) -> None:
         """Update an existing tutorial.
 
@@ -454,7 +462,8 @@ class TutorialDatabase:
             raise ValueError(f"Tutorial {tutorial.id} not found")
 
         # Start a transaction
-        async with self._connection:
+        await self._connection.execute("BEGIN")
+        try:
             # Update the tutorial
             await self._connection.execute(
                 """
@@ -479,6 +488,14 @@ class TutorialDatabase:
             )
 
             # Delete existing sections, code examples, and exercises
+            await self._connection.execute(
+                "DELETE FROM exercises WHERE section_id IN (SELECT id FROM tutorial_sections WHERE tutorial_id = ?)",
+                (tutorial.id,),
+            )
+            await self._connection.execute(
+                "DELETE FROM code_examples WHERE section_id IN (SELECT id FROM tutorial_sections WHERE tutorial_id = ?)",
+                (tutorial.id,),
+            )
             await self._connection.execute("DELETE FROM tutorial_sections WHERE tutorial_id = ?", (tutorial.id,))
 
             # Insert the sections
@@ -544,6 +561,13 @@ class TutorialDatabase:
                         ),
                     )
 
+            # Commit the transaction
+            await self._connection.commit()
+        except Exception:
+            # Rollback on error
+            await self._connection.rollback()
+            raise
+
     async def delete_tutorial(self, tutorial_id: str) -> bool:
         """Delete a tutorial.
 
@@ -557,11 +581,19 @@ class TutorialDatabase:
             await self.connect()
 
         # Start a transaction
-        async with self._connection:
+        await self._connection.execute("BEGIN")
+        try:
             # Delete the tutorial
             cursor = await self._connection.execute("DELETE FROM tutorials WHERE id = ?", (tutorial_id,))
 
+            # Commit the transaction
+            await self._connection.commit()
+
             return cursor.rowcount > 0
+        except Exception:
+            # Rollback on error
+            await self._connection.rollback()
+            raise
 
     async def import_tutorial_from_file(self, file_path: str) -> Tutorial | None:
         """Import a tutorial from a JSON file.
@@ -621,16 +653,17 @@ class TutorialDatabase:
             await self.connect()
 
         # Start a transaction
-        async with self._connection:
+        await self._connection.execute("BEGIN")
+        try:
             # Check if there's an existing record
-            async with self._connection.execute(
+            cursor = await self._connection.execute(
                 """
                 SELECT * FROM user_progress
                 WHERE user_id = ? AND tutorial_id = ? AND section_id = ?
                 """,
                 (user_id, tutorial_id, section_id),
-            ) as cursor:
-                existing = await cursor.fetchone()
+            )
+            existing = await cursor.fetchone()
 
             if existing is None:
                 # Insert a new record
@@ -666,6 +699,13 @@ class TutorialDatabase:
                     ),
                 )
 
+            # Commit the transaction
+            await self._connection.commit()
+        except Exception:
+            # Rollback on error
+            await self._connection.rollback()
+            raise
+
     async def track_exercise_attempt(
         self,
         user_id: str,
@@ -687,7 +727,8 @@ class TutorialDatabase:
             await self.connect()
 
         # Start a transaction
-        async with self._connection:
+        await self._connection.execute("BEGIN")
+        try:
             # Insert the attempt
             await self._connection.execute(
                 """
@@ -704,6 +745,13 @@ class TutorialDatabase:
                     datetime.now().isoformat(),
                 ),
             )
+
+            # Commit the transaction
+            await self._connection.commit()
+        except Exception:
+            # Rollback on error
+            await self._connection.rollback()
+            raise
 
     async def get_user_progress(self, user_id: str) -> dict[str, Any]:
         """Get a user's progress.

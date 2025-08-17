@@ -198,10 +198,10 @@ def test_load_save_progress(tracker: ProgressTracker) -> None:
     assert loaded_progress.certificates[0].id == progress.certificates[0].id
 
 
-def test_track_section_completion(tracker: ProgressTracker) -> None:
+async def test_track_section_completion(tracker: ProgressTracker) -> None:
     """Test tracking section completion."""
     # Track section completion
-    progress = tracker.track_section_completion(
+    progress = await tracker.track_section_completion(
         "test-user",
         "test-tutorial",
         "section-1",
@@ -213,7 +213,7 @@ def test_track_section_completion(tracker: ProgressTracker) -> None:
     assert "section-1" in progress.completed_sections["test-tutorial"]
 
     # Track section completion for another section
-    progress = tracker.track_section_completion(
+    progress = await tracker.track_section_completion(
         "test-user",
         "test-tutorial",
         "section-2",
@@ -228,7 +228,7 @@ def test_track_section_completion(tracker: ProgressTracker) -> None:
     assert "test-tutorial" in progress.completed_tutorials
 
     # Track section as not completed
-    progress = tracker.track_section_completion(
+    progress = await tracker.track_section_completion(
         "test-user",
         "test-tutorial",
         "section-1",
@@ -343,7 +343,7 @@ def test_achievements(tracker: ProgressTracker) -> None:
     assert any(a.id == "perfect_score" for a in progress.achievements)
 
 
-def test_certificates(tracker: ProgressTracker) -> None:
+async def test_certificates(tracker: ProgressTracker) -> None:
     """Test certificate tracking."""
     # Create a progress object with completed tutorials
     progress = UserProgress(
@@ -352,7 +352,7 @@ def test_certificates(tracker: ProgressTracker) -> None:
     )
 
     # Check for certificates
-    tracker._check_certificates(progress)
+    await tracker._check_certificates(progress)
 
     # Check that the "Beginner Certificate" was awarded
     assert any(c.id == "beginner_certificate" for c in progress.certificates)
@@ -361,7 +361,7 @@ def test_certificates(tracker: ProgressTracker) -> None:
     progress.completed_tutorials.append("intermediate-1")
 
     # Check for certificates
-    tracker._check_certificates(progress)
+    await tracker._check_certificates(progress)
 
     # Check that the "Intermediate Certificate" was awarded
     assert any(c.id == "intermediate_certificate" for c in progress.certificates)
@@ -370,14 +370,14 @@ def test_certificates(tracker: ProgressTracker) -> None:
     progress.completed_tutorials.append("advanced-1")
 
     # Check for certificates
-    tracker._check_certificates(progress)
+    await tracker._check_certificates(progress)
 
     # Check that the "Advanced Certificate" and "MCP Master" were awarded
     assert any(c.id == "advanced_certificate" for c in progress.certificates)
     assert any(c.id == "mcp_master_certificate" for c in progress.certificates)
 
 
-def test_get_progress_summary(tracker: ProgressTracker) -> None:
+async def test_get_progress_summary(tracker: ProgressTracker) -> None:
     """Test getting a progress summary."""
     # Create a progress object with completed tutorials and sections
     progress = UserProgress(
@@ -414,7 +414,7 @@ def test_get_progress_summary(tracker: ProgressTracker) -> None:
     tracker.save_progress(progress)
 
     # Get the progress summary
-    summary = tracker.get_progress_summary("test-user")
+    summary = await tracker.get_progress_summary("test-user")
 
     # Check the summary
     assert summary["user_id"] == "test-user"

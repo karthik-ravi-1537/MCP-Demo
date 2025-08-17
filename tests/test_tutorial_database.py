@@ -28,13 +28,21 @@ async def db() -> AsyncGenerator[TutorialDatabase, None]:
 
     # Create the database
     db = TutorialDatabase(db_path)
+
+    # Connect to the database
     await db.connect()
 
     yield db
 
-    # Clean up
-    await db.close()
-    os.unlink(db_path)
+    # Clean up - ensure connection is properly closed
+    if db._connection is not None:
+        await db.close()
+
+    # Remove the temporary file
+    try:
+        os.unlink(db_path)
+    except OSError:
+        pass  # File might already be deleted
 
 
 @pytest_asyncio.fixture
