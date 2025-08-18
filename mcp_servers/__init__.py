@@ -1,13 +1,11 @@
 """MCP server implementations for the demo project."""
 
-from typing import Dict, Type
-
 from .base import BaseMCPServer
-
+from .calculator_server import CalculatorServer
 
 # Import server implementations
 from .file_server import FileSystemServer
-from .calculator_server import CalculatorServer
+
 # These will be uncommented as we implement each server
 # from .text_server import TextProcessingServer
 # from .system_server import SystemInfoServer
@@ -18,7 +16,7 @@ from .calculator_server import CalculatorServer
 
 
 # Server registry
-SERVER_TYPES: Dict[str, Type[BaseMCPServer]] = {
+SERVER_TYPES: dict[str, type[BaseMCPServer]] = {
     "file": FileSystemServer,
     "calc": CalculatorServer,
     # "text": TextProcessingServer,
@@ -34,6 +32,6 @@ def create_server(server_type: str) -> BaseMCPServer:
     """Create an MCP server of the specified type."""
     if server_type not in SERVER_TYPES:
         raise ValueError(f"Unknown server type: {server_type}")
-    
+
     server_class = SERVER_TYPES[server_type]
     return server_class()

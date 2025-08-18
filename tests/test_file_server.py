@@ -1,9 +1,8 @@
 """Tests for the file system MCP server."""
 
-import os
 import pathlib
 import tempfile
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 
@@ -28,7 +27,7 @@ def test_read_file(server: FileSystemServer, temp_dir: pathlib.Path) -> None:
     # Create a test file
     test_file = temp_dir / "test.txt"
     test_file.write_text("Hello, world!")
-    
+
     # Read the file
     content = server.read_file("test.txt")
     assert content == "Hello, world!"
@@ -51,7 +50,7 @@ def test_write_file(server: FileSystemServer, temp_dir: pathlib.Path) -> None:
     # Write to a file
     result = server.write_file("test.txt", "Hello, world!")
     assert result is True
-    
+
     # Check that the file was created
     test_file = temp_dir / "test.txt"
     assert test_file.exists()
@@ -63,7 +62,7 @@ def test_write_file_create_directories(server: FileSystemServer, temp_dir: pathl
     # Write to a file in a non-existent directory
     result = server.write_file("subdir/test.txt", "Hello, world!")
     assert result is True
-    
+
     # Check that the file was created
     test_file = temp_dir / "subdir" / "test.txt"
     assert test_file.exists()
@@ -83,16 +82,16 @@ def test_list_directory(server: FileSystemServer, temp_dir: pathlib.Path) -> Non
     (temp_dir / "file2.txt").write_text("File 2")
     (temp_dir / "subdir").mkdir()
     (temp_dir / "subdir" / "file3.txt").write_text("File 3")
-    
+
     # List the directory
     files = server.list_directory(".")
-    
+
     # Check that the files were listed
     assert len(files) == 3
     assert any(f["path"] == "file1.txt" for f in files)
     assert any(f["path"] == "file2.txt" for f in files)
     assert any(f["path"] == "subdir" for f in files)
-    
+
     # Check file types
     for f in files:
         if f["path"] == "subdir":
@@ -107,10 +106,10 @@ def test_list_directory_recursive(server: FileSystemServer, temp_dir: pathlib.Pa
     (temp_dir / "file1.txt").write_text("File 1")
     (temp_dir / "subdir").mkdir()
     (temp_dir / "subdir" / "file2.txt").write_text("File 2")
-    
+
     # List the directory recursively
     files = server.list_directory(".", recursive=True)
-    
+
     # Check that the files were listed
     assert len(files) == 3
     assert any(f["path"] == "file1.txt" for f in files)
@@ -128,7 +127,7 @@ def test_list_directory_not_a_directory(server: FileSystemServer, temp_dir: path
     """Test listing a file as a directory."""
     # Create a test file
     (temp_dir / "test.txt").write_text("Hello, world!")
-    
+
     with pytest.raises(ValueError):
         server.list_directory("test.txt")
 
@@ -138,7 +137,7 @@ def test_path_exists(server: FileSystemServer, temp_dir: pathlib.Path) -> None:
     # Create a test file and directory
     (temp_dir / "test.txt").write_text("Hello, world!")
     (temp_dir / "subdir").mkdir()
-    
+
     # Check if paths exist
     assert server.path_exists("test.txt") is True
     assert server.path_exists("subdir") is True
@@ -155,10 +154,10 @@ def test_file_info(server: FileSystemServer, temp_dir: pathlib.Path) -> None:
     # Create a test file
     test_file = temp_dir / "test.txt"
     test_file.write_text("Hello, world!")
-    
+
     # Get file information
     info = server.file_info("test.txt")
-    
+
     # Check the information
     assert info["path"] == "test.txt"
     assert info["type"] == "file"
@@ -172,10 +171,10 @@ def test_file_info_directory(server: FileSystemServer, temp_dir: pathlib.Path) -
     """Test getting information about a directory."""
     # Create a test directory
     (temp_dir / "subdir").mkdir()
-    
+
     # Get directory information
     info = server.file_info("subdir")
-    
+
     # Check the information
     assert info["path"] == "subdir"
     assert info["type"] == "directory"

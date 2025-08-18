@@ -1,7 +1,6 @@
 """Tutorial content renderer."""
 
 import re
-from typing import Dict, List, Optional, Tuple, Union
 
 import markdown
 from pygments import highlight
@@ -14,16 +13,16 @@ from .models import CodeExample, Exercise, Tutorial, TutorialSection
 
 class TutorialRenderer:
     """Renderer for tutorial content."""
-    
+
     def __init__(self, highlight_style: str = "default"):
         """Initialize the renderer.
-        
+
         Args:
             highlight_style: Pygments style for syntax highlighting.
         """
         self.highlight_style = highlight_style
         self.html_formatter = HtmlFormatter(style=highlight_style)
-        
+
         # Initialize Markdown extensions
         self.markdown_extensions = [
             "fenced_code",
@@ -31,60 +30,56 @@ class TutorialRenderer:
             "tables",
             "nl2br",
         ]
-    
-    def render_tutorial(self, tutorial: Tutorial) -> Dict[str, Union[str, List[Dict]]]:
+
+    def render_tutorial(self, tutorial: Tutorial) -> dict[str, str | list[dict]]:
         """Render a tutorial to HTML.
-        
+
         Args:
             tutorial: The tutorial to render.
-            
+
         Returns:
             Dictionary with rendered content.
         """
         sections = []
-        
+
         for section in tutorial.sections:
             sections.append(self.render_section(section))
-        
+
         return {
             "id": tutorial.id,
             "title": tutorial.title,
-            "description": markdown.markdown(
-                tutorial.description, extensions=self.markdown_extensions
-            ),
+            "description": markdown.markdown(tutorial.description, extensions=self.markdown_extensions),
             "level": tutorial.level.value,
             "prerequisites": tutorial.prerequisites,
             "estimated_time": tutorial.estimated_time,
             "sections": sections,
         }
-    
-    def render_section(self, section: TutorialSection) -> Dict[str, Union[str, List[Dict]]]:
+
+    def render_section(self, section: TutorialSection) -> dict[str, str | list[dict]]:
         """Render a tutorial section to HTML.
-        
+
         Args:
             section: The section to render.
-            
+
         Returns:
             Dictionary with rendered content.
         """
         # Process the content to handle special blocks
         processed_content = self._process_content(section.content)
-        
+
         # Render the content to HTML
-        html_content = markdown.markdown(
-            processed_content, extensions=self.markdown_extensions
-        )
-        
+        html_content = markdown.markdown(processed_content, extensions=self.markdown_extensions)
+
         # Render code examples
         code_examples = []
         for example in section.code_examples:
             code_examples.append(self.render_code_example(example))
-        
+
         # Render exercises
         exercises = []
         for exercise in section.exercises:
             exercises.append(self.render_exercise(exercise))
-        
+
         return {
             "id": section.id,
             "title": section.title,
@@ -92,69 +87,60 @@ class TutorialRenderer:
             "code_examples": code_examples,
             "exercises": exercises,
         }
-    
-    def render_code_example(self, example: CodeExample) -> Dict[str, str]:
+
+    def render_code_example(self, example: CodeExample) -> dict[str, str]:
         """Render a code example to HTML.
-        
+
         Args:
             example: The code example to render.
-            
+
         Returns:
             Dictionary with rendered content.
         """
         # Highlight the code
         highlighted_code = self._highlight_code(example.code, example.language)
-        
+
         return {
             "id": example.id,
             "title": example.title,
-            "description": markdown.markdown(
-                example.description, extensions=self.markdown_extensions
-            ),
+            "description": markdown.markdown(example.description, extensions=self.markdown_extensions),
             "code": example.code,
             "highlighted_code": highlighted_code,
             "language": example.language,
             "expected_output": example.expected_output,
         }
-    
-    def render_exercise(self, exercise: Exercise) -> Dict[str, Union[str, List[Dict]]]:
+
+    def render_exercise(self, exercise: Exercise) -> dict[str, str | list[dict]]:
         """Render an exercise to HTML.
-        
+
         Args:
             exercise: The exercise to render.
-            
+
         Returns:
             Dictionary with rendered content.
         """
         # Highlight the starter code
-        highlighted_starter_code = self._highlight_code(
-            exercise.starter_code, "python"  # Assuming Python for now
-        )
-        
+        highlighted_starter_code = self._highlight_code(exercise.starter_code, "python")  # Assuming Python for now
+
         return {
             "id": exercise.id,
             "title": exercise.title,
-            "description": markdown.markdown(
-                exercise.description, extensions=self.markdown_extensions
-            ),
+            "description": markdown.markdown(exercise.description, extensions=self.markdown_extensions),
             "difficulty": exercise.difficulty.value,
             "starter_code": exercise.starter_code,
             "highlighted_starter_code": highlighted_starter_code,
             "test_cases": exercise.test_cases,
-            "hints": [
-                markdown.markdown(hint, extensions=self.markdown_extensions)
-                for hint in exercise.hints
-            ],
+            "hints": [markdown.markdown(hint, extensions=self.markdown_extensions) for hint in exercise.hints],
             "max_attempts": exercise.max_attempts,
         }
-    
-    def _highlight_code(self, code: str, language: Optional[str] = None) -> str:
+
+    def _highlight_code(self, code: str, language: str | None = None) -> str:
         """Highlight code using Pygments.
-        
+
         Args:
             code: The code to highlight.
             language: The language of the code.
-            
+
         Returns:
             HTML with highlighted code.
         """
@@ -163,42 +149,42 @@ class TutorialRenderer:
                 lexer = get_lexer_by_name(language)
             else:
                 lexer = guess_lexer(code)
-            
+
             return highlight(code, lexer, self.html_formatter)
-        
+
         except ClassNotFound:
             # If the language is not found, use plain text
             return f"<pre><code>{code}</code></pre>"
-    
+
     def _process_content(self, content: str) -> str:
         """Process tutorial content to handle special blocks.
-        
+
         Args:
             content: The content to process.
-            
+
         Returns:
             Processed content.
         """
         # Process interactive code blocks
         content = self._process_interactive_blocks(content)
-        
+
         # Process note blocks
         content = self._process_note_blocks(content)
-        
+
         # Process warning blocks
         content = self._process_warning_blocks(content)
-        
+
         # Process tip blocks
         content = self._process_tip_blocks(content)
-        
+
         return content
-    
+
     def _process_interactive_blocks(self, content: str) -> str:
         """Process interactive code blocks.
-        
+
         Args:
             content: The content to process.
-            
+
         Returns:
             Processed content.
         """
@@ -207,11 +193,11 @@ class TutorialRenderer:
         # print("Hello, world!")
         # ```
         pattern = r"```interactive\s+(\w+)\s*\n(.*?)```"
-        
+
         def replace(match):
             language = match.group(1)
             code = match.group(2)
-            
+
             # Create an interactive code block
             return f"""
 <div class="interactive-code" data-language="{language}">
@@ -220,15 +206,15 @@ class TutorialRenderer:
 <div class="output"></div>
 </div>
 """
-        
+
         return re.sub(pattern, replace, content, flags=re.DOTALL)
-    
+
     def _process_note_blocks(self, content: str) -> str:
         """Process note blocks.
-        
+
         Args:
             content: The content to process.
-            
+
         Returns:
             Processed content.
         """
@@ -237,10 +223,10 @@ class TutorialRenderer:
         # This is a note.
         # :::
         pattern = r":::\s*note\s*\n(.*?):::"
-        
+
         def replace(match):
             note_content = match.group(1)
-            
+
             # Create a note block
             return f"""
 <div class="note">
@@ -252,15 +238,15 @@ class TutorialRenderer:
 </div>
 </div>
 """
-        
+
         return re.sub(pattern, replace, content, flags=re.DOTALL)
-    
+
     def _process_warning_blocks(self, content: str) -> str:
         """Process warning blocks.
-        
+
         Args:
             content: The content to process.
-            
+
         Returns:
             Processed content.
         """
@@ -269,10 +255,10 @@ class TutorialRenderer:
         # This is a warning.
         # :::
         pattern = r":::\s*warning\s*\n(.*?):::"
-        
+
         def replace(match):
             warning_content = match.group(1)
-            
+
             # Create a warning block
             return f"""
 <div class="warning">
@@ -284,15 +270,15 @@ class TutorialRenderer:
 </div>
 </div>
 """
-        
+
         return re.sub(pattern, replace, content, flags=re.DOTALL)
-    
+
     def _process_tip_blocks(self, content: str) -> str:
         """Process tip blocks.
-        
+
         Args:
             content: The content to process.
-            
+
         Returns:
             Processed content.
         """
@@ -301,10 +287,10 @@ class TutorialRenderer:
         # This is a tip.
         # :::
         pattern = r":::\s*tip\s*\n(.*?):::"
-        
+
         def replace(match):
             tip_content = match.group(1)
-            
+
             # Create a tip block
             return f"""
 <div class="tip">
@@ -316,18 +302,18 @@ class TutorialRenderer:
 </div>
 </div>
 """
-        
+
         return re.sub(pattern, replace, content, flags=re.DOTALL)
-    
+
     def get_css(self) -> str:
         """Get CSS for syntax highlighting and custom blocks.
-        
+
         Returns:
             CSS string.
         """
         # Get Pygments CSS
         pygments_css = self.html_formatter.get_style_defs(".codehilite")
-        
+
         # Add custom CSS
         custom_css = """
 /* Tutorial styles */
@@ -509,5 +495,5 @@ class TutorialRenderer:
     color: #155724;
 }
 """
-        
+
         return pygments_css + custom_css

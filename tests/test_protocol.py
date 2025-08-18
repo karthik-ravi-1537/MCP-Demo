@@ -13,10 +13,9 @@ from mcp_servers.protocol import (
     MCPToolError,
     MCPToolList,
     MCPToolParameter,
-    MCPToolRegistration,
     MCPToolResult,
-    validate_mcp_message,
     serialize_mcp_message,
+    validate_mcp_message,
 )
 
 
@@ -28,7 +27,7 @@ def test_tool_parameter():
         type="string",
         required=True,
     )
-    
+
     assert param.name == "filename"
     assert param.description == "Name of the file to read"
     assert param.type == "string"
@@ -60,7 +59,7 @@ def test_tool_definition():
         category="filesystem",
         tags=["file", "io", "read"],
     )
-    
+
     assert tool.name == "read_file"
     assert tool.description == "Read a file from the filesystem"
     assert len(tool.parameters) == 2
@@ -79,7 +78,7 @@ def test_tool_call():
         parameters={"filename": "example.txt", "encoding": "utf-8"},
         call_id="123",
     )
-    
+
     assert call.message_type == MCPMessageType.TOOL_CALL
     assert call.tool_name == "read_file"
     assert call.parameters["filename"] == "example.txt"
@@ -94,7 +93,7 @@ def test_tool_result():
         call_id="123",
         result="File content goes here",
     )
-    
+
     assert result.message_type == MCPMessageType.TOOL_RESULT
     assert result.call_id == "123"
     assert result.result == "File content goes here"
@@ -109,7 +108,7 @@ def test_tool_error():
         error_message="File not found: example.txt",
         stack_trace="Traceback (most recent call last):\\n...",
     )
-    
+
     assert error.message_type == MCPMessageType.TOOL_ERROR
     assert error.call_id == "123"
     assert error.error_type == "FileNotFoundError"
@@ -154,7 +153,7 @@ def test_tool_list():
             ),
         ],
     )
-    
+
     assert tool_list.message_type == MCPMessageType.TOOL_LIST
     assert len(tool_list.tools) == 2
     assert tool_list.tools[0].name == "read_file"
@@ -171,22 +170,22 @@ def test_validate_mcp_message():
         "parameters": {"filename": "example.txt"},
         "call_id": "123",
     }
-    
+
     message = validate_mcp_message(data)
     assert isinstance(message, MCPToolCall)
     assert message.tool_name == "read_file"
-    
+
     # Test valid tool result
     data = {
         "message_type": "tool_result",
         "call_id": "123",
         "result": "File content",
     }
-    
+
     message = validate_mcp_message(data)
     assert isinstance(message, MCPToolResult)
     assert message.result == "File content"
-    
+
     # Test invalid message (missing required field)
     data = {
         "message_type": "tool_call",
@@ -194,25 +193,25 @@ def test_validate_mcp_message():
         "parameters": {"filename": "example.txt"},
         "call_id": "123",
     }
-    
+
     with pytest.raises(ValidationError):
         validate_mcp_message(data)
-    
+
     # Test invalid message (unknown message type)
     data = {
         "message_type": "unknown_type",
         "some_field": "some_value",
     }
-    
+
     with pytest.raises(ValueError, match="Unknown message type"):
         validate_mcp_message(data)
-    
+
     # Test invalid message (missing message_type)
     data = {
         "tool_name": "read_file",
         "parameters": {"filename": "example.txt"},
     }
-    
+
     with pytest.raises(ValueError, match="Message missing required field"):
         validate_mcp_message(data)
 
@@ -224,7 +223,7 @@ def test_serialize_mcp_message():
         parameters={"filename": "example.txt"},
         call_id="123",
     )
-    
+
     serialized = serialize_mcp_message(call)
     assert isinstance(serialized, dict)
     assert serialized["message_type"] == "tool_call"
@@ -232,11 +231,11 @@ def test_serialize_mcp_message():
     assert serialized["parameters"]["filename"] == "example.txt"
     assert serialized["call_id"] == "123"
     assert "timestamp" in serialized
-    
+
     # Test that the serialized message can be converted to JSON
     json_str = json.dumps(serialized)
     assert isinstance(json_str, str)
-    
+
     # Test that the serialized message can be parsed back
     parsed = json.loads(json_str)
     assert parsed["message_type"] == "tool_call"

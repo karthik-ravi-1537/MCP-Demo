@@ -4,18 +4,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from fastapi.websockets import WebSocketDisconnect
 
 from mcp_servers.base import BaseMCPServer
 from server.app import app
-
 
 client = TestClient(app)
 
 
 class MockServer(BaseMCPServer):
     """Mock MCP server for testing."""
-    
+
     def __init__(self):
         """Initialize the mock server."""
         self.tools = {
@@ -35,23 +33,23 @@ class MockServer(BaseMCPServer):
                 ],
             },
         ]
-    
+
     def test_tool(self, param1: str) -> str:
         """Test tool implementation."""
         if param1 == "error":
             raise ValueError("Test error")
         return f"Result: {param1}"
-    
+
     def get_tutorial_content(self) -> str:
         """Get tutorial content."""
         return "# Mock Server Tutorial"
-    
+
     def get_example_code(self) -> dict:
         """Get example code."""
         return {
             "example1": "server.test_tool('test')",
         }
-    
+
     def get_tool_descriptions(self) -> list:
         """Get tool descriptions."""
         return self.tool_descriptions
@@ -102,7 +100,7 @@ def test_get_server_health(mock_create_server):
     """Test getting server health."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     response = client.get("/api/servers/servers/mock/health")
     assert response.status_code == 200
     assert "status" in response.json()
@@ -114,7 +112,7 @@ def test_check_server_health(mock_create_server):
     """Test checking server health."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     response = client.post("/api/servers/servers/mock/health/check")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
@@ -128,7 +126,7 @@ def test_get_server_tutorial(mock_create_server):
     """Test getting server tutorial content."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     response = client.get("/api/servers/servers/mock/tutorial")
     assert response.status_code == 200
     assert response.text == '"# Mock Server Tutorial"'
@@ -140,7 +138,7 @@ def test_get_server_examples(mock_create_server):
     """Test getting server example code."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     response = client.get("/api/servers/servers/mock/examples")
     assert response.status_code == 200
     assert "example1" in response.json()
@@ -153,7 +151,7 @@ def test_get_server_tools(mock_create_server):
     """Test getting server tools."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     response = client.get("/api/servers/servers/mock/tools")
     assert response.status_code == 200
     assert len(response.json()) == 1
@@ -169,13 +167,13 @@ def test_call_tool(mock_create_server):
     """Test calling a tool."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         "/api/servers/servers/mock/tools/test_tool",
         json={
@@ -196,13 +194,13 @@ def test_call_tool_not_found(mock_create_server):
     """Test calling a non-existent tool."""
     mock_server = MockServer()
     mock_create_server.return_value = mock_server
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         "/api/servers/servers/mock/tools/nonexistent",
         json={
@@ -223,13 +221,13 @@ def test_call_tool_error(mock_create_server):
     mock_server = MockServer()
     mock_server.test_tool = MagicMock(side_effect=ValueError("Test error"))
     mock_create_server.return_value = mock_server
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         "/api/servers/servers/mock/tools/test_tool",
         json={

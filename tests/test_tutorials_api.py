@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
+from server.api.sessions import sessions
 from server.app import app
 from tutorials.models import (
     CodeExample,
@@ -14,8 +15,14 @@ from tutorials.models import (
     TutorialSection,
 )
 
-
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def clear_sessions():
+    """Clear sessions before each test."""
+    sessions.clear()
+    yield
 
 
 @pytest.fixture
@@ -70,7 +77,7 @@ def test_register_user():
     assert "user_id" in response.json()
     assert "session_id" in response.json()
     assert response.json()["username"] == "testuser"
-    
+
     # Check that a session cookie was set
     assert "session_id" in response.cookies
 
@@ -85,7 +92,7 @@ def test_login_user():
     assert "user_id" in response.json()
     assert "session_id" in response.json()
     assert response.json()["username"] == "testuser"
-    
+
     # Check that a session cookie was set
     assert "session_id" in response.cookies
 
@@ -104,7 +111,7 @@ def test_get_current_user():
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     # Get the current user
     response = client.get(
         "/api/tutorials/users/me",
@@ -115,11 +122,11 @@ def test_get_current_user():
     assert "last_active" in response.json()
 
 
-@patch("tutorials.list_tutorials")
+@patch("server.api.tutorials.list_tutorials")
 def test_get_tutorials(mock_list_tutorials, mock_tutorial):
     """Test getting all tutorials."""
     mock_list_tutorials.return_value = [mock_tutorial]
-    
+
     response = client.get("/api/tutorials/tutorials")
     assert response.status_code == 200
     assert len(response.json()) == 1
@@ -129,11 +136,11 @@ def test_get_tutorials(mock_list_tutorials, mock_tutorial):
     assert response.json()[0]["section_count"] == len(mock_tutorial.sections)
 
 
-@patch("tutorials.show_tutorial")
+@patch("server.api.tutorials.show_tutorial")
 def test_get_tutorial(mock_show_tutorial, mock_tutorial):
     """Test getting a tutorial by ID."""
     mock_show_tutorial.return_value = mock_tutorial
-    
+
     response = client.get(f"/api/tutorials/tutorials/{mock_tutorial.id}")
     assert response.status_code == 200
     assert response.json()["id"] == mock_tutorial.id
@@ -141,24 +148,22 @@ def test_get_tutorial(mock_show_tutorial, mock_tutorial):
     assert len(response.json()["sections"]) == len(mock_tutorial.sections)
 
 
-@patch("tutorials.show_tutorial")
+@patch("server.api.tutorials.show_tutorial")
 def test_get_tutorial_not_found(mock_show_tutorial):
     """Test getting a non-existent tutorial."""
     mock_show_tutorial.return_value = None
-    
+
     response = client.get("/api/tutorials/tutorials/nonexistent")
     assert response.status_code == 404
-    assert response.json()["detail"] == "Tutorial not found"
+    assert response.json()["detail"] == "The requested resource was not found."
 
 
-@patch("tutorials.show_tutorial")
+@patch("server.api.tutorials.show_tutorial")
 def test_get_tutorial_section(mock_show_tutorial, mock_tutorial):
     """Test getting a tutorial section."""
     mock_show_tutorial.return_value = mock_tutorial
-    
-    response = client.get(
-        f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/{mock_tutorial.sections[0].id}"
-    )
+
+    response = client.get(f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/{mock_tutorial.sections[0].id}")
     assert response.status_code == 200
     assert response.json()["id"] == mock_tutorial.sections[0].id
     assert response.json()["title"] == mock_tutorial.sections[0].title
@@ -166,33 +171,29 @@ def test_get_tutorial_section(mock_show_tutorial, mock_tutorial):
     assert len(response.json()["exercises"]) == len(mock_tutorial.sections[0].exercises)
 
 
-@patch("tutorials.show_tutorial")
+@patch("server.api.tutorials.show_tutorial")
 def test_get_tutorial_section_not_found(mock_show_tutorial, mock_tutorial):
     """Test getting a non-existent tutorial section."""
     mock_show_tutorial.return_value = mock_tutorial
-    
-    response = client.get(
-        f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/nonexistent"
-    )
+
+    response = client.get(f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/nonexistent")
     assert response.status_code == 404
-    assert response.json()["detail"] == "Section not found"
+    assert response.json()["detail"] == "The requested resource was not found."
 
 
-@patch("tutorials.track_section_completion")
-@patch("tutorials.show_tutorial")
-def test_update_section_completion(
-    mock_show_tutorial, mock_track_section_completion, mock_tutorial
-):
+@patch("server.api.tutorials.track_section_completion")
+@patch("server.api.tutorials.show_tutorial")
+def test_update_section_completion(mock_show_tutorial, mock_track_section_completion, mock_tutorial):
     """Test updating section completion status."""
     mock_show_tutorial.return_value = mock_tutorial
     mock_track_section_completion.return_value = {"completed_sections": 1}
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/{mock_tutorial.sections[0].id}/completion",
         json={"completed": True},
@@ -202,21 +203,19 @@ def test_update_section_completion(
     assert "completed_sections" in response.json()
 
 
-@patch("tutorials.track_exercise_attempt")
-@patch("tutorials.show_tutorial")
-def test_submit_exercise(
-    mock_show_tutorial, mock_track_exercise_attempt, mock_tutorial
-):
+@patch("server.api.tutorials.track_exercise_attempt")
+@patch("server.api.tutorials.show_tutorial")
+def test_submit_exercise(mock_show_tutorial, mock_track_exercise_attempt, mock_tutorial):
     """Test submitting an exercise solution."""
     mock_show_tutorial.return_value = mock_tutorial
     mock_track_exercise_attempt.return_value = {"completed_exercises": 1}
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         f"/api/tutorials/tutorials/{mock_tutorial.id}/sections/{mock_tutorial.sections[0].id}/exercises/{mock_tutorial.sections[0].exercises[0].id}",
         json={"code": "print('Solution')"},
@@ -229,17 +228,17 @@ def test_submit_exercise(
     assert "progress" in response.json()
 
 
-@patch("tutorials.get_user_progress")
+@patch("server.api.tutorials.get_user_progress")
 def test_get_progress(mock_get_user_progress):
     """Test getting user progress."""
     mock_get_user_progress.return_value = {"completed_tutorials": 1}
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.get(
         "/api/tutorials/progress",
         cookies={"session_id": register_response.cookies["session_id"]},
@@ -248,17 +247,17 @@ def test_get_progress(mock_get_user_progress):
     assert "completed_tutorials" in response.json()
 
 
-@patch("tutorials.set_current_tutorial")
+@patch("server.api.tutorials.set_current_tutorial")
 def test_update_current_tutorial(mock_set_current_tutorial):
     """Test updating the current tutorial."""
     mock_set_current_tutorial.return_value = {"current_tutorial": "test-tutorial"}
-    
+
     # Register a user to get a session
     register_response = client.post(
         "/api/tutorials/users/register",
         json={"username": "testuser"},
     )
-    
+
     response = client.post(
         "/api/tutorials/progress/current-tutorial",
         json={"tutorial_id": "test-tutorial", "section_id": "section-1"},
