@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 authors = [{name = "Karthik Ravi"}]
 keywords = ["mcp", "model-context-protocol", "tutorial", "demo", "ai", "llm"]
-requires-python = ">=3.11"
+requires-python = "==3.11.*"
 
 dependencies = [
     "fastapi>=0.104.0",
